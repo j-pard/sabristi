@@ -1,0 +1,48 @@
+name: sabristi
+recipe: laravel
+
+env_file:
+  - .lando/.env
+
+config:
+  php: 8.1
+  webroot: public
+  database: "mariadb:10.2"
+
+services:
+  appserver:
+    type: "php:8.1"
+    via: "apache:2.4"
+    webroot: public
+    xdebug: true
+    config:
+      php: .lando/php.ini
+    build_as_root:
+      - "a2enmod headers expires"
+      - "apt-get update -y && apt-get install -y zip"
+  database:
+    portforward: 33311
+  mailpit:
+    type: compose
+    services:
+      image: axllent/mailpit
+      command: /mailpit
+      ports:
+        - 8025:8025
+  node:
+    type: "node:18"
+    scanner: false
+    ports:
+      - 3009:3009
+
+proxy:
+  appserver:
+    - sabristi.lndo.site
+  mailhog:
+    - mail-sabristi.lndo.site
+
+tooling:
+  npm:
+    service: node-cli
+  yarn:
+    service: node-cli
